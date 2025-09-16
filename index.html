@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="Lightweight, Edge-Aware, and Temporally Consistent Supersampling for Mobile Real-Time Rendering">
+  <meta name="keywords" content="Real-time rendering, supersampling, frame generation, super resolution">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lightweight, Edge-Aware, and Temporally Consistent Supersampling for Mobile Real-Time Rendering</title>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-PYVRSFMDRL');
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="stylesheet" href="./static/css/switch_image.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-2 publication-title">Lightweight, Edge-Aware, and Temporally Consistent Supersampling for Mobile Real-Time Rendering</h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://sp-young.github.io/">Sipeng Yang</a><sup>1,4</sup>,
+            </span>
+            <span class="author-block">
+              Jiayu Ji<sup>1</sup>,
+            </span>
+            <span class="author-block">
+              Junhao Zhuge<sup>1</sup>,
+            </span>
+            <span class="author-block">
+              Jinzhe Zhao<sup>1</sup>,
+            </span>
+            <span class="author-block">
+              Qiang Qiu<sup>2</sup>,
+            </span>
+            <span class="author-block">
+              Chen Li<sup>2</sup>,
+            </span>
+            <span class="author-block">
+              Yuzhong Yan<sup>2</sup>,
+            </span>
+            <span class="author-block">
+              Kerong Wang<sup>2</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://sites.cs.ucsb.edu/~lingqi/">Ling-Qi Yan</a><sup>3</sup>,
+            </span>
+            <span class="author-block">
+              <a href="http://www.cad.zju.edu.cn/home/jin/">Xiaogang Jin</a><sup>1</sup>
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>State Key Lab of CAD&CG, Zhejiang University,</span>
+            <span class="author-block"><sup>2</sup>OPPO Computing & Graphics Research Institute,</span>
+            <span class="author-block"><sup>3</sup>Mohamed bin Zayed University of Artificial Intelligence,</span>
+            <span class="author-block"><sup>4</sup>Hangzhou Research Institute of AI and Holographic Technology</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section hero is-light">
+  <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Supersampling has proven highly effective in enhancing visual fidelity by reducing aliasing, increasing resolution, and generating interpolated frames. It has become a standard component of modern real-time rendering pipelines. However, on mobile platforms, deep learning-based supersampling methods remain impractical due to stringent hardware constraints, while non-neural supersampling techniques often fall short in delivering perceptually high-quality results. In particular, producing visually pleasing reconstructions and temporally coherent interpolations remains a significant challenge in mobile settings. In this work, we present a novel, lightweight supersampling framework tailored for mobile devices. Our approach substantially improves both image reconstruction quality and temporal consistency while maintaining real-time performance. For super-resolution, we propose an intra-pixel object coverage estimation method for reconstructing high-quality anti-aliased pixels in edge regions, a gradient-guided strategy for non-edge areas, and a temporal sample accumulation approach to improve overall image quality. For frame interpolation, we develop an efficient motion estimation module coupled with a lightweight fusion scheme that integrates both estimated optical flow and rendered motion vectors, enabling temporally coherent interpolation of object dynamics and lighting variations. Extensive experiments demonstrate that our method consistently outperforms existing baselines in both perceptual image quality and temporal smoothness, while maintaining real-time performance on mobile GPUs.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ Abstract. -->
+  </div>
+</section>
+
+
+<section class="section hero">
+  <div class="container">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Method Overview</h2>
+          <div class="content has-text-justified">
+            <img src="static/images/pipeline.png" style="width: 100%;">
+            <p style="margin-top: 1em;">
+              For <strong>SR</strong>, edge and non-edge areas are processed separately using depth and luminance maps. Edge regions are classified by depth tile directions and adaptive neighbor queries to produce directional encodings (\(f_1\), \(f_2\), \(f_3\)), which index a LUT to retrieve coverage-aware filters. Non-edge regions are similarly mapped to directional features, followed by LUT-based filter retrieval. The retrieved filters are then applied to the low resolution (LR) image to reconstruct high-quality anti-aliased HR outputs \(I^U_t\). A temporal accumulation module blends current and previous SR frames to produce the final result.<br/>
+              For <strong>FG</strong>, lighting buffers are extracted and optical flow is estimated via a pyramid-based structure. Rendered MVs and estimated flow fields are merged and splated to obtain bidirectional MVs, which guide warping of adjacent SR frames to generate the interpolated frame \(I^{SR}_{t+0.5}\).
+            </p>
+          </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="columns is-centered has-text-centered">
+  <HR align="center" style="border:3 double #000000" width="80%" SIZE="5">
+</div>
+
+<section class="section hero">
+  <div class="container">
+
+    <!-- Super Resolution. -->
+    <div class="columns is-centered">
+      <div class="column is-four-fifths has-text-centered">
+        <h2 class="title is-3">Super Resolution</h2>
+
+        <!-- Coverage-Aware Edge Reconstruction. -->
+        <h3 class="title is-4">Coverage-Aware Edge Reconstruction</h3>
+
+        <div class="content is-centered has-text-justified">
+          <div style="display: flex;justify-content: center;">
+            <div style="width: 61%;">
+              <img src="static/images/Edge_Reconstruction.png" style="width: 100%;">
+                <p style="text-align: center;" class="title is-size-6">
+                  Anti-Aliased Edge Reconstruction Using Surfaces and Discrete Samples
+                </p>
+            </div>
+
+            <div style="width: 37%; margin-left: 1.5em;">
+              <div style="display: flex;justify-content: center;">
+                <img src="static/images/Tile_Pattern.png" style="width: 100%;">
+              </div>
+              <p style="text-align: center;margin-top: 0.8em;" class="title is-size-6">
+                  Example of Tile Patterns
+              </p>
+            </div>
+          </div>
+        </div>
+      
+        <div class="content has-text-justified">
+          <p>
+            As shown on the left figure, for a pixel that spans both \(S_1\) and \(S_2\), its color requires estimating the relative areas \(A_1\) and \(A_2\) to compute. In order to extend the formulation to practical rendering scenarios, we replace the continuous surface \(S_1\) and \(S_2\) by discrete LR sample sets. Then we apply a weighted combination of filtered results, which can be further generalized as a bilateral-like filter that combines spatial Gaussian weights and a data-driven range kernel modulated by surface coverage:
+          </p>
+          <div style="display: flex; justify-content: space-around; align-items: center; margin-top: -1.5em;">
+            <div>
+              <p style="margin-left: 2.6em;">
+                <span style="font-size:1.2em; line-height:0%">
+                  $$
+                    \begin{align}
+                    c(p_b) &= \frac{1}{W} \sum_{s_i \in \Omega} F(p_b, s_i) \cdot c(s_i), \label{eq:cpb_main} \\
+                    F(p_b, s_i) &= F_s(p_b, s_i) \cdot F_r(p_b, s_i), \label{eq:cpb_filter}
+                    \end{align}
+                  $$
+                </span>
+              </p>
+            </div>
+            <div>
+              <p>
+                <span style="font-size:1.2em; line-height:0%">
+                  $$
+                    \begin{align}
+                    F_s(p_b, s_i) &= \frac{1}{2\pi\sigma^2} \exp\left(-\frac{l_i^2}{2\sigma^2}\right), \\
+                    F_r(p_b, s_i) &=
+                    \begin{cases}
+                    A_1 / (A_1 + A_2), & s_i \in S'_1; \\
+                    A_2 / (A_1 + A_2), & s_i \in S'_2,
+                    \end{cases}\label{eq:fr}
+                    \end{align}
+                  $$
+                </span>
+              </p>
+            </div>
+          </div>
+          <div class="columns is-centered">
+            <div class="column is-four-fifths">
+              <p style="color: rgb(0, 113, 205);">
+                \(W\) is a normalization factor, \(\Omega\) is the spatial neighborhood, \(s_i\) is an LR sample, \(F_s\) is the spatial kernel, \(F_r\) is a range kernel modulated by the estimated coverage ratio, and \(l_i\) denotes the Euclidean distance.
+              </p>  
+            </div>
+          </div>
+          <p>
+            For the range kernel, we determine it by analyzing the depth patterns within each 2\(\times\)2 pixel tile. To obtain more reliable results, we represent directional encodes within a 4\(\times\)4 region as a triplet: the center direction \(f_1\) and two adaptively selected orthogonal neighbors \(f_2\) and \(f_3\), as illustrated in the right figure.
+          </p>
+          <div class="content is-centered has-text-justified">
+          <div style="display: flex;justify-content: center;">
+            <div style="width: 55%;">
+              <img src="static/images/LUT.png" style="width: 100%;">
+            </div>
+
+            <div style="width: 45%; margin-left: 1.5em;">
+              <div style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                <div style="height: 35%;">
+                  <img src="static/images/MLP.png" style="width: 100%;">
+                </div>
+                <div>
+                  <p style="text-align: center;" class="title is-size-6">
+                    MLP
+                  </p>
+                </div>
+                <div style="height: 65%; margin-top: 0.5em; margin-left: -7em;">
+                  <img src="static/images/Encoding.png" style="width: 200%;">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+          <p>
+            Finally, we train two MLP to approxiamate the range kernel \(F_r(p_b, s_i)\) and the spatial kernel parameter \(\sigma\), denoted as \(F^{p_b}_{MLP_1}(f_1,f_2,f_3)\) and \(F^{p_b}_{MLP_2}(f_1,f_2,f_3)\). To avoid runtime MLP inference, we precompute the normalized weight vector \(w \in \mathbb{R}^{16}\) and store it in a compact lookup table (LUT). As a result, the final pixel color becomes: 
+          </p>
+          <p>
+            <span style="font-size:1.2em; line-height:0%">
+              $$
+                \begin{align}
+                c(p_b) = \sum_{\substack{s_i \in \Omega ,\, i=1,\dots,16}} \text{LUT}(f_1, f_2, f_3)[i] \cdot c(s_i),
+                \label{eq:cpb_final}
+                \end{align}
+              $$
+            </span>
+          </p>
+        </div>
+        <br/>
+        <!--/ Coverage-Aware Edge Reconstruction. -->
+
+        <!-- Upsampling for Non-Edge Area. -->
+        <h3 class="title is-4">Upsampling for Non-Edge Area</h3>
+        
+        <div class="content is-centered has-text-justified">
+          <img src="static/images/FlatSR.png" style="width: 100%;">
+        </div>
+
+        <div class="content is-centered">
+          <div style="display: flex; justify-content: space-around; margin-top: -1em;">
+            <div>
+              <p class="title is-size-6">
+                Luminance Gradient Computation
+              </p>
+            </div>
+            <div>
+              <p class="title is-size-6" style="margin-left: 1em;">
+                Direction Encoding
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="content has-text-justified">
+          <p>
+            For each pixel tile, as illustrated in the left figure, we compute luminance differences in the horizontal and vertical directions to form a gradient vector \(v = (\Delta_x, \Delta_y)\). To meet the real-time constraints of mobile platforms, we propose a lightweight encoding method, which yields a gradient direction \(d \in [0, 12]\) and an intensity level \(\lambda \in [0, 12]\): 
+          </p>
+          <div style="display: flex; justify-content: space-around; align-items: center; margin-top: -1.5em;">
+            <div>
+              <p style="margin-left: 2.6em;">
+                <span style="font-size:1.2em; line-height:0%">
+                  $$
+                    d = 6 \cdot \frac{\Delta_x}{|\Delta_x| + |\Delta_y|} + 6,
+                  $$
+                </span>
+              </p>
+            </div>
+            <div>
+              <p>
+                <span style="font-size:1.2em; line-height:0%">
+                  $$
+                    \lambda = 2 \cdot \mathrm{clamp}^6_0(\|\boldsymbol{v}\|_2).
+                  $$
+                </span>
+              </p>
+            </div>
+          </div>
+          <p>
+            We train a third MLP to predict the filter weights for non-edge patterns, denoted as \(F_{MLP_3}(f_1 = 0,f_2,f_3)\), where (\(f_2, f_3\)) are rounded to integer values to match the encoding structure introduced in the previous section. This unified encoding design enables both edge (\(f_1 \in [1,12]\)) and non-edge (\(f_1 = 0\)) weights to be stored in a single \(13 \times 13 \times 13 \times 64\) LUT, facilitating efficient inference and deployment.
+          </p>
+        </div>
+        <!--/ Upsampling for Non-Edge Area. -->
+
+        <h3 class="title is-4" style="margin-top: 1.8em;">Temporal Accumulation</h3>
+        <div class="content has-text-justified">
+          <p>
+            We warp the previous SR frame \(I^{sr}_{t-1}\) to the current view using the motion vector \(M_{t-1 \rightarrow t}\), and blend it (\(I^{\prime sr}_{t-1 \rightarrow t}\)) with the current upsampled frame \(I^u_t\). The blending weight is adaptively computed based on motion magnitube (\(W_M\)), disocclusion (\(W_O\)), and distance confidence (\(W_D\)), preserving reliable history while reducing artifacts:
+          </p>
+        </div>
+        <p style="margin-left: 2.6em;">
+          <span style="font-size:1.2em; line-height:0%">
+            $$
+              W_b = \mathrm{clamp}^1_0(a \cdot W_M + W_O + b \cdot W_D + c),
+            $$
+          </span>
+        </p>
+        <p style="margin-left: 2.6em;">
+          <span style="font-size:1.2em; line-height:0%">
+            $$
+              I^{sr}_t = W_b \cdot I^u_t + (1 - W_b) \cdot I'^{sr}_{t-1 \rightarrow t}. \label{eq:isr}
+            $$
+          </span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="columns is-centered has-text-centered">
+  <HR align="center" style="border:3 double #000000" width="80%" SIZE="5">
+</div>
+    <!--/ Super Resolution. -->
+
+    <!-- Lighting Effect Interpolation. -->
+<section class="section hero">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-four-fifths has-text-centered">
+        <h2 class="title is-3">Lighting Effect Interpolation</h2>
+        <h3 class="title is-4">Optical Flow Estimation</h3>
+        <div class="content is-centered has-text-justified">
+          <div style="display: flex;justify-content: center;">
+            <div style="width: 28.5%;">
+              <img src="static/images/optical_flow1.png" style="width: 100%;">
+              <p style="text-align: center; margin-top: 0.2em;" class="title is-size-6">
+                Optical Flow Estimator
+              </p>
+            </div>
+
+            <div style="width: 15.6%; margin-left: 1em;">
+              <img src="static/images/flow_upsampling.png" style="width: 100%;">
+              <p style="text-align: center;" class="title is-size-6">
+                Upsampling
+              </p>
+            </div>
+
+            <div style="width: 45%; margin-left: 1em;">
+              <img src="static/images/flow_update.png" style="width: 100%;">
+              <p style="text-align: center;" class="title is-size-6">
+                Update via Modified Three Step Search
+              </p>
+            </div>
+
+            <div style="width: 12.3%; margin-left: 1em;">
+              <img src="static/images/3DRS.png" style="width: 100%;">
+              <p style="text-align: center;" class="title is-size-6">
+                3DRS Correction
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="content has-text-justified">
+          <p>
+            To support real-time deployment on mobile hardware, we propose a lightweight optical flow estimation model based on 3DRS, augmented with a lighting-effect buffer separation strategy. Our method improves flow accuracy by combining pyramid block matching with a 3DRS refinement layer, while maintaining robustness to large motion, enhancing spatial consistency, and supporting high frame rates on mobile devices.
+          </p>
+          <p>
+            During upsampling, the flow is progressively refined using a similarity-aware strategy that selects the optimal candidate from neighboring vectors, effectively suppressing error accumulation. In the update phase, we adopt a modified three-step search that retains both the initial and previously best-matching candidates, mitigating convergence to local minima and improving correspondence accuracy. Finally, we introduce an enhanced 3DRS refinement layer that replaces temporal inputs with flow propagated from coarser levels, yielding improved spatial coherence and computational efficiency.
+          </p>
+        </div>
+
+        <h3 class="title is-4" style="margin-top: 1.8em;">Merging Rendered MVs and Estimated Flow Fields</h3>
+        <div class="content has-text-justified">
+          <p>
+            To ensure motion consistency in frame interpolation, we adopt a patch-level (\(8 \times 8\)) selection strategy that chooses between rendered motion vectors and estimated optical flow based on similarity. This mitigates noise-induced artifacts common in per-pixel selection. In regions affected by dynamic shading or disocclusion, we further enhance robustness by discarding unreliable flow vectors and falling back to rendered MVs, thereby preserving both geometric integrity and temporal coherence.
+          </p>
+        </div>
+
+        <h3 class="title is-4" style="margin-top: 1.8em;">Splatting and Image Reconstruction</h3>
+        <div class="content has-text-justified">
+          <p>
+            To generate the interpolated frame, we compute bidirectional motion vectors (\(M^U_{t \rightarrow t+0.5}\) and \(M^U_{t+1 \rightarrow t+0.5}\)) via MV splatting, refine them to suppress grid artifacts, and upsample to full resolution. These bidirectional MVs are then used to warp the adjacent SR frames, and the final output \(I^{SR}_{t+0.5}\) is synthesized by selecting the pixel with greater depth to resolve occlusion.
+          </p>
+        </div>
+
+      </div>
+    </div>
+</section>
+<div class="columns is-centered has-text-centered">
+  <HR align="center" style="border:3 double #000000" width="80%" SIZE="5">
+</div>
+    <!--/ Lighting Effect Interpolation. -->
+
+<script>
+  let currentImage = 0;
+
+  function switch_image(flag) {
+    const imageElement = document.getElementById('result');
+    var img = ["./static/images/result_sr.png", "./static/images/result_fg.png", "./static/images/result_flow.png", "./static/images/result_tr.png"];
+    if (flag == 0) {
+      currentImage --;
+      if (currentImage < 0) {
+        currentImage = 3;
+      }
+      imageElement.src = img[currentImage];
+    } else {
+      currentImage ++;
+      if (currentImage > 3) {
+        currentImage = 0;
+      }
+      imageElement.src = img[currentImage];
+    }
+  }
+
+  function select_image(flag) {
+    const imageElement = document.getElementById('result');
+    var img = ["./static/images/result_sr.png", "./static/images/result_fg.png", "./static/images/result_flow.png", "./static/images/result_tr.png"];
+    imageElement.src = img[flag];
+  }
+</script>
+
+    <!-- Result. -->
+<section class="section hero">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-four-fifths has-text-centered">
+        <h2 class="title is-3">Results and Comparisons</h2>
+
+        
+          <div class="banner" style="margin-top: 3em;">
+            <div style="display: flex; justify-content: space-around; margin-bottom: 2em;">
+              <button onclick="select_image(0)" class="button is-info is-rounded is-light">SR Comparisons</button>
+              <button onclick="select_image(1)" class="button is-info is-rounded is-light">FG Comparisons</button>
+              <button onclick="select_image(2)" class="button is-info is-rounded is-light">Flow Comparisons</button>
+              <button onclick="select_image(3)" class="button is-info is-rounded is-light">Translucency & Reflection</button>
+            </div>
+            <img id="result" src="./static/images/result_sr.png" alt="" style="width: 100%;">
+          </div>
+
+        <h3 class="title is-4" style="margin: 2em;">Performance</h3>
+
+          <div style="display: flex; justify-content: center;">
+            <div style="width: 65%;">
+              <img src="./static/images/performance.png" style="width: 100%;">
+            </div>        
+          </div>
+          <div class="content is-centered has-text-justified" style="margin-top: 1em;">
+            <p>
+              We evaluate the runtime performance of our method on two modern mobile SoCs: Qualcomm Snapdragon 8 Gen3 and 8 Elite. The evaluation focuses on two configurations: Ours-SR and Ours-FGSR.The added cost compared to Mob-FGSR is minimal and accounts for improved image fidelity and temporal consistency. Importantly, the total latency remains well within the budget for high-frame-rate deployment on mobile platforms.
+            </p>
+          </div>
+
+      </div>
+    </div>
+    </div>
+</section>
+<div class="columns is-centered has-text-centered">
+  <HR align="center" style="border:3 double #000000" width="80%" SIZE="5">
+</div>
+    <!--/ Result. -->
+
+<section class="section hero">
+  <div class="container">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths has-text-centered">
+        <h2 class="title is-3">Android Demo</h2>
+        <div class="publication-links">
+          <span class="link-block">
+            <a href="https://github.com/Anonymous-3214/Submit-Anonymous32.github.io/raw/refs/heads/Review/static/demo/AndroidDemo-arm64.apk?download="
+                class="external-link button is-normal is-rounded is-dark">
+              <span class="icon">
+                  <i class="fas fa-mobile"></i>
+              </span>
+              <span>Android Demo</span>
+            </a>
+          </span>
+          <span class="link-block" style="margin-left: 2em;">
+              <a href=""
+                  class="external-link button is-normal is-rounded is-dark">
+                <span class="icon">
+                    <i class="fas fa-code"></i>
+                </span>
+                <span>Code coming soon...</span>
+              </a>
+            </span>
+        </div>
+        <p class="content has-text-justified" style="margin-top: 2em;">
+          After launching the demo, please follow the steps below to ensure consistent evaluation conditions:<br/>
+          <strong>1. Verify that the device is set to high-performance mode.</strong><br/>
+          <strong>2. Open the Unreal Engine console and enter the following commands:</strong>
+          <code>r.framegeneration 1</code>, <code>a.UseSwappyForFramePacing 0</code>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="content has-text-centered">
+    </div>
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            This page was built using the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project Page Template</a> which was adopted from the <a href="https://nerfies.github.io" target="_blank">Nerfies</a> project page.
+            You are free to borrow the of this website, we just ask that you link back to this page in the footer. <br> This website is licensed under a <a rel="license"  href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative
+            Commons Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+        </div>
+      </div>,
+
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
